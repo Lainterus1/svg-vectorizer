@@ -1,266 +1,47 @@
-# SVG Vectorizer для Codex
+# SVG Vectorizer
 
-Локальный PNG/JPG/WebP → SVG без построения контуров языковой моделью.
-VTracer создаёт геометрию, SVGO оптимизирует SVG, XML/path validator и resvg
-проверяют структуру и реальную отрисовку. MCP, сервер и ключи API не нужны.
-После установки зависимостей конвертация работает без сети.
+**Turn PNG, JPG and WebP artwork into scalable SVG files.**
 
-## Подготовка распространения
+Have a logo or drawing but only a raster image? SVG Vectorizer traces it into real
+vector paths you can resize, recolor and edit in design tools. It runs locally and
+fits into ChatGPT/Codex as a skills-only plugin.
 
-[Отдельный пакет и публикация](docs/DISTRIBUTION.md) ·
-[Обработка данных](docs/PRIVACY.md) · [MIT](LICENSE)
+![A real PNG-to-SVG conversion with SVG Vectorizer](examples/before-after.png)
 
-Архив готовится `python scripts/package_plugin.py -o dist/svg-vectorizer.zip`.
-Это исходный пакет для проверки, не установленный плагин и не опубликованный выпуск.
-Результаты текущего прогона прилагаются к комплекту проверки отдельно.
+*Left: the 512 × 512 PNG input. Right: the SVG produced by this plugin, with no manual
+path editing. [View the SVG](examples/demo-output.svg) · [Reproduce the example](examples/README.md)*
 
-## Установка и зависимости
+## When it helps
 
-Нужны Python 3.10+ и Node.js 20+. Проверено на Windows x64 с Python 3.12.10
-и Node.js 24.15.0. Для других ОС нужны доступные бинарные пакеты зависимостей.
+- Prepare a raster logo or icon for a website or app
+- Convert flat-color artwork into editable vector shapes
+- Trace line drawings while retaining transparent areas
 
-| Зависимость | Версия | Назначение |
-|---|---|---|
-| `vtracer` | 1.0.0a4 | Python API трассировки; закреплённый предварительный выпуск |
-| `Pillow` | 12.3.0 | PNG/JPEG/WebP, EXIF, палитра и альфа-канал |
-| `svgo` | 4.1.0 | Оптимизация SVG |
-| `@resvg/resvg-js` | 2.6.2 | Локальная проверка отрисовки; без браузера |
-| `setuptools` | ≥77, только установка CLI | Создание команды `vectorize` |
+Best for clear shapes and limited colors. Photos, gradients and tiny text may produce
+large or simplified results. Tracing is an approximation, not recovery of the original design file.
 
-В PowerShell, находясь в корне `svg-vectorizer`:
+## Quick start
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --only-binary=:all: -r requirements.txt
-.\.venv\Scripts\python.exe -m pip install -e .
-npm.cmd ci --ignore-scripts
-.\.venv\Scripts\vectorize.exe --help
-```
-
-На Linux/macOS:
+Requires **Python 3.10+** and **Node.js 20+**. From the plugin folder on Linux/macOS:
 
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install --only-binary=:all: -r requirements.txt
-.venv/bin/python -m pip install -e .
 npm ci --ignore-scripts
-.venv/bin/vectorize --help
+.venv/bin/python scripts/vectorize.py input.png -o output.svg --preset logo
 ```
 
-Используется установка CLI из исходной папки (`pip install -e .`): JS-модули
-находятся в её `node_modules`. Глобальная установка SVGO не заменяет `npm ci`.
-`package-lock.json` фиксирует транзитивные npm-зависимости. Не переносите `.venv`
-между компьютерами: создайте окружение заново. После перемещения исходной папки
-повторите установку CLI. Для прямого вызова скрипта `pip install -e .` не нужен.
+Choose `logo`, `icon`, `illustration` or `line-art`; omit the preset for automatic selection.
+[Windows setup, options and tests →](docs/USAGE.md)
 
-После обновления плагина повторите `pip install -e .` в его окружении: VTracer
-0.6 использует несовместимый API. Установщик закрепляет именно 1.0.0a4;
-конвертация не подменяет отсутствующую версию другим движком или ручными контурами.
+## How it works
 
-## Подключение к Codex
+**VTracer** builds paths → **SVGO** optimizes them → **XML checks and resvg** validate the result.
+The output replaces its destination only after validation succeeds. Conversion makes no network
+requests after dependencies are installed. No API key, MCP server or background service is needed.
 
-Это стандартный skills-only плагин: `.codex-plugin/plugin.json` и
-`skills/vectorize/SKILL.md`. Формат сверен с установленным `plugin-creator`,
-его валидатором, локальным примером OpenAI Visualize и
-[официальным руководством Codex](https://learn.chatgpt.com/docs/build-plugins).
+This repository is the standalone source package. Installing its dependencies does not register
+it in ChatGPT/Codex; follow the [plugin packaging guide](docs/DISTRIBUTION.md).
 
-Папка с работающим CLI сама по себе не регистрирует плагин в Codex.
-Для установки в персональный каталог передайте Codex следующую инструкцию,
-указав абсолютный путь к этой папке:
-
-```text
-Используй plugin-creator: добавь готовый svg-vectorizer из <абсолютный путь>
-в мой персональный marketplace и установи его. Сохрани существующие записи
-каталога и файлы плагина. Разрешаю нужные локальные изменения каталога и
-установку зависимостей в локальном окружении установленной копии.
-```
-
-Штатный personal marketplace находится в `~/.agents/plugins/marketplace.json`,
-а его `./plugins/svg-vectorizer` указывает на `~/plugins/svg-vectorizer`.
-После добавления записи штатная команда установки —
-`codex plugin add svg-vectorizer@<имя-marketplace>`; имя надо прочитать из
-реального каталога. Для стандартного personal marketplace отдельное
-`codex plugin marketplace add` не требуется. Не перезаписывайте существующий
-manifest повторным созданием scaffold. После установки откройте новую задачу.
-Если установленная копия не содержит окружение, выполните команды установки
-зависимостей в её корне, который определяется по пути загруженного Skill.
-
-Для немедленного использования без регистрации можно указать Codex полный
-путь к `skills/vectorize/SKILL.md` и приложить исходный файл.
-
-После подключения Codex выбирает Skill по `description`: PNG/JPG/WebP → SVG,
-векторизация логотипа, иконки, рисунка или line-art. Автовызов разрешён стандартным
-поведением Skills; отдельный MCP не нужен.
-[Механизм выбора навыков](https://learn.chatgpt.com/docs/build-skills).
-Skill запрещает ручное построение сложных `path` и замену ошибок трассировки
-ручной генерацией SVG. Это инструкция агенту, а не глобальный технический запрет
-на все его инструменты.
-
-## Использование
-
-После активации окружения (`.\.venv\Scripts\Activate.ps1` в PowerShell):
-
-```bash
-vectorize input.png -o output.svg
-vectorize logo.png -o logo.svg --preset logo
-vectorize icon.png -o icon.svg --preset icon
-vectorize drawing.png -o drawing.svg --preset illustration
-vectorize sketch.png -o sketch.svg --preset line-art
-vectorize logo.webp -o logo.svg --preset logo --colors 4 --simplify 7
-vectorize drawing.jpg -o drawing.svg --filter-speckle 0 --simplify 1 --verbose
-vectorize icon.png -o icon.svg --no-optimize
-vectorize large-illustration.png -o drawing.svg --preset illustration --scale 1
-vectorize --help
-```
-
-Активация необязательна: используйте `.\.venv\Scripts\vectorize.exe` или
-`.\.venv\Scripts\python.exe scripts/vectorize.py` с теми же аргументами.
-Вход и выход можно задавать абсолютными путями; пути с пробелами заключайте в кавычки.
-
-| Параметр | Значение |
-|---|---|
-| `input` | PNG, JPG/JPEG, WebP; расширение сверяется с содержимым |
-| `-o`, `--output` | Обязательный путь `.svg`; каталоги создаются после проверок |
-| `--preset` | `auto`, `logo`, `icon`, `illustration`, `line-art`; по умолчанию `auto` |
-| `--colors` | Максимум 2–256 цветов; `line-art` допускает только 2 |
-| `--simplify` | 0–10; больше означает сильнее упрощать кривые |
-| `--filter-speckle` | 0–10000, сторона шумового пятна в пикселях исходника; 0 сохраняет мелкие компоненты |
-| `--scale` | 1 или 2; у `illustration` по умолчанию 2, у остальных 1; размеры SVG сохраняются |
-| `--no-optimize` | Пропустить только SVGO; валидация остаётся обязательной |
-| `--verbose` | Показать выбранный профиль и стадии |
-
-`--simplify` — шкала этого инструмента, не точная погрешность в пикселях:
-У `illustration` она задаёт `length_threshold = (2.5 + 0.25 × simplify) × scale`
-и допуск дополнительного упрощения `simplify × scale / 4`.
-У остальных профилей сохраняется `length_threshold = (3.5 + 0.65 × simplify) × scale`.
-VTracer принимает speckle как сторону, затем возводит её в квадрат; инструмент
-умножает её на `scale` один раз, сохраняя смысл порога в пикселях исходника.
-`--colors` использует Pillow median-cut без dithering. При явном ограничении
-дополнительные усреднённые оттенки VTracer привязываются к ближайшему цвету
-палитры. Без явного `--colors` число в preset задаёт входную палитру, а итоговый
-SVG может содержать дополнительные усреднённые оттенки.
-Серые уровни альфа-маски не входят в цветовую палитру.
-
-## Пресеты
-
-| Preset | Цветов | Упрощение | Speckle | Баланс |
-|---|---:|---:|---:|---|
-| `logo` | 8 | 7 | 8 | Немного цветов, гладкие кривые, удаление мелкого шума |
-| `icon` | 6 | 8 | 4 | Простые контуры, небольшая палитра и размер файла |
-| `illustration` | 128 | 2 | 0–4, по размеру | Выбранный вариант B: Lanczos 2×, точнее цвета и края |
-| `line-art` | 2 | 1 | 2 | Чёрно-белые контуры, сохранение тонких связных линий |
-
-Параметры пользователя имеют приоритет. Codex выбирает preset по смыслу задачи.
-CLI `auto` использует ограниченную выборку пикселей: почти монохромные изображения
-относятся к `line-art`; малое число цветовых групп — к `icon` до 256 px или `logo`
-выше; остальные — к `illustration`. Это эвристика, её можно переопределить.
-
-У `illustration` speckle по умолчанию равен `min(4, max(width, height) // 320)`.
-На маленьких рисунках фильтр не удаляет отдельные детали; при длинной стороне
-1280 px и больше используется выбранный в сравнении порог B: 4 px исходника,
-то есть 8 px при трассировке 2×. Явный `--filter-speckle` имеет приоритет.
-Увеличение выполняется до создания палитры, с учётом альфа-канала. Группа SVG
-возвращается в исходный масштаб; `width`, `height` и `viewBox` не увеличиваются.
-Для сохранения особо мелких отметок укажите `--filter-speckle 0`.
-
-Настройки B выбраны визуально на цветном персонаже: 128 цветов, Lanczos 2×,
-VTracer `stacked`, SVGO. Перебор экспериментальных вариантов при обычном вызове
-не запускается. Этот выбор не означает универсального выигрыша на всех растрах.
-
-`line-art` использует autocontrast, порог 180/255 и binary VTracer. Белый фон
-непрозрачного оригинала остаётся белым; прозрачность оригинала сохраняется маской.
-Результат содержит заполненные контуры, а не центральные линии `stroke`.
-
-## Надёжность и прозрачность
-
-1. Pillow декодирует растр и применяет EXIF-ориентацию без изменения исходника.
-2. VTracer создаёт цветовые контуры. При наличии прозрачности второй вызов
-   VTracer трассирует альфа-канал в векторную luminance-маску. Полностью прозрачный
-   оригинал даёт корректный пустой SVG. В SVG не встраивается исходный растр.
-3. Задаётся `viewBox="0 0 width height"`; удаляются metadata и пустые контуры,
-   которые VTracer иногда выдаёт на мелких JPEG-компонентах.
-4. SVGO выполняет явный список безопасных оптимизаций. Нет удаления hidden/off-canvas
-   элементов, агрессивной замены кривых дугами, удаления масок или `viewBox`.
-5. Проверяются XML, размеры, команды/координаты `path`, ID и ссылки масок.
-   Допустим только генерируемый набор элементов/атрибутов; произвольные CSS,
-   внешние ссылки и XML processing instructions отклоняются до рендера.
-   resvg действительно отрисовывает результат. Отрисовки до/после SVGO сравниваются:
-   изменение любого канала более чем на 2/255 считается ошибкой.
-   Если непрозрачный исходник приобрёл прозрачные щели, результат отклоняется.
-6. Выход заменяется атомарно только после всех проверок. При ошибке прежний SVG
-   остаётся на месте; отсутствующий результат не создаётся.
-
-Альфа-маска трассируется без упрощения и удаления мелких компонентов: сохраняются
-отверстия и частичная непрозрачность. Поэтому её края сохраняют пиксельные ступени
-оригинала; на границах возможны отличия сглаживания при отображении SVG.
-Маска может увеличить число путей и размер файла. Числа цветов и контуров
-не гарантируют идеального восстановления дизайнерской геометрии.
-
-## Ошибки
-
-CLI возвращает `0` при успехе, `1` при ошибке pipeline, `2` при неверном синтаксисе CLI.
-Ошибки отсутствующего input, неверного формата, VTracer, SVGO, Node/resvg,
-трассировки и невалидного SVG выводятся в stderr без скрытого ручного fallback.
-Для отсутствующего Python-пакета сообщение содержит `python -m pip install ...`;
-для JS-пакета — `npm ci --ignore-scripts` в корне плагина.
-
-SVGO обязателен по умолчанию. Только явный `--no-optimize` позволяет его пропустить.
-Окружение не пытается автоматически скачать зависимости во время конвертации.
-
-## Тесты и smoke test
-
-Из корня плагина:
-
-```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
-.\.venv\Scripts\python.exe -m tests.smoke --output-dir examples
-.\.venv\Scripts\vectorize.exe examples/smoke-input.png -o examples/cli-output.svg --preset logo --verbose
-```
-
-Smoke создаёт PNG, проводит `raster → VTracer → SVGO → validation → output.svg`,
-проверяет прозрачное отверстие и полупрозрачный элемент, сохраняет исходник,
-SVG, отрисованный PNG и JSON-отчёт. `tests/fixtures.py` строит растровые тестовые
-изображения с помощью Pillow; координаты SVG всегда вычисляет VTracer.
-
-Набор тестов покрывает форматы, все пресеты, EXIF, прозрачность/полупрозрачность,
-палитровый PNG, сохранение тонких линий и мелких деталей, ошибки зависимостей,
-валидность и сохранение существующего output при сбое. Тесты используют реальные
-VTracer, SVGO и resvg; отказные сценарии используют контролируемые подмены.
-
-Дополнительные быстрые проверки без native Python-пакетов:
-
-```bash
-python -m unittest tests.test_validation tests.test_distribution -v
-```
-
-## Когда автоматическая векторизация не подходит
-
-- Фотографии, мягкие тени и градиенты: много контуров, большой SVG, возможная постеризация.
-- Мелкий текст: нет OCR и восстановления шрифтов; лучше исходный вектор или текстовый слой.
-- Точная фирменная геометрия и инженерные чертежи: нужен оригинал или профессиональная проверка.
-- Плохой скан, сильный JPEG-шум, потерянные линии: инструмент не восстанавливает отсутствующие данные.
-- Простые новые примитивы — круг, стрелка, прямоугольник — разумнее создать вручную.
-
-Размер входа и увеличенного растра ограничен 16 мегапикселями; анимации отклоняются.
-При `illustration --scale 2` исходник должен помещаться в 4 мегапикселя;
-для более крупного входа инструмент явно предложит `--scale 1` или уменьшение.
-Большие и шумные
-изображения всё равно могут долго трассироваться и занимать много памяти. resvg-стадия
-имеет таймаут 120 секунд; Python API VTracer отдельного таймаута не имеет.
-ICC/CMYK цветопередача не является задачей допечатной подготовки этого инструмента.
-
-Проверка рендера доказывает читаемость SVG и сохранность после оптимизации.
-Она не доказывает художественную эквивалентность исходному растру: preset намеренно
-меняет палитру, шум и степень упрощения. Для важных деталей уменьшите фильтрацию
-и сравните изображения визуально.
-
-## Источники и решения
-
-- [Codex Plugins](https://learn.chatgpt.com/docs/build-plugins): стандартный manifest и навыки.
-- [VTracer 1.0.0a4 Python API](https://github.com/visioncortex/vtracer/blob/1.0.0-alpha.4/crates/vtracer-py/README.md): закреплён API `Config.convert_pixels`; это предварительный выпуск.
-- [SVGO](https://svgo.dev/docs/usage/) и [convertPathData](https://svgo.dev/docs/plugins/convertPathData/): явная конфигурация оптимизации.
-- [resvg-js](https://github.com/thx/resvg-js): проверка реальной отрисовки без браузера.
-
-Архитектура: один Python CLI, маленький Node helper для SVGO/resvg, один Skill.
-Временные процессы завершаются после вызова. Нет MCP, фоновых сервисов, NumPy,
-OpenCV, вызовов LLM или загрузки изображений во внешнюю систему.
+**Version:** 0.1.1 · **License:** [MIT](LICENSE) · **Publisher:** Daniil
+**Support:** gonchardaniil1998@gmail.com · [Privacy policy](docs/PRIVACY.md)

@@ -1,90 +1,77 @@
-# Подготовка отдельной публикации
+# Install and package the plugin
 
-Статус: самостоятельный исходный пакет; публикация исходников на GitHub не означает
-одобрение или публикацию в каталоге OpenAI.
-Плагин подготовлен как самостоятельный репозиторий с исходниками в корне.
-Публичный репозиторий: [Lainterus1/svg-vectorizer](https://github.com/Lainterus1/svg-vectorizer). Имя плагина — `svg-vectorizer`, подготовленная patch-версия — `0.1.1`: исправления
-и упаковка сохраняют существующие CLI/presets. Manifest, pyproject и npm metadata
-согласованы; назначение версии не означает её публикацию.
+SVG Vectorizer is a standalone skills-only plugin. Its source lives at
+[Lainterus1/svg-vectorizer](https://github.com/Lainterus1/svg-vectorizer).
+Publishing source on GitHub does not mean the plugin is listed in OpenAI's directory.
 
-## Воспроизводимый архив
+## Use with ChatGPT/Codex
 
-Из корня плагина, после тестов:
+The plugin uses `.codex-plugin/plugin.json` and `skills/vectorize/SKILL.md`.
+The [official packaging guide](https://developers.openai.com/plugins/build/plugins)
+continues to support this compatibility layout.
+
+Install the Python/Node dependencies with [USAGE](USAGE.md), then use Plugin Creator
+in a supported client to add this existing folder to your personal marketplace.
+Give its absolute path and ask it to preserve other marketplace entries. Only authorize
+the local installation changes you intend to make. A working CLI does not itself register
+a plugin, and local execution/dependency availability differs between clients.
+
+For an unregistered local test, point the agent directly at
+`skills/vectorize/SKILL.md` and supply the input image. Test discovery, invocation and
+file delivery in your target client before claiming it is supported.
+
+## Build a clean ZIP
+
+From the plugin root:
 
 ```bash
+python -m unittest discover -s tests -v
+python -m tests.smoke --output-dir /path/to/smoke-results
 python scripts/package_plugin.py -o dist/svg-vectorizer.zip
 ```
 
-Скрипт использует только стандартную библиотеку Python. В ZIP попадают только точные
-пути из `distribution-files.json`: manifest, Skill, CLI/Node helper, закреплённые
-зависимости, лицензия, документы, тесты и демонстрационный растр. У файлов фиксированные
-timestamps/permissions и порядок; одинаковые байты входа в одной среде дают одинаковый
-SHA-256. Корень архива — корень плагина, без дополнительного каталога-обёртки.
+The ZIP contains only exact paths in `distribution-files.json`: the manifest, skill,
+runtime source, dependency pins, license, docs, tests and demo assets. Plugin files sit
+at the archive root, with no extra wrapper directory. It excludes virtual environments,
+node_modules, Git metadata, private configuration and unlisted files.
 
-Окружение, `node_modules`, Git, личные настройки, временные файлы, старые отчёты с
-локальными путями и runtime других проектов не включаются. Симлинки/Windows reparse points, обход каталогов и
-отсутствующие обязательные файлы отклоняются; прежний ZIP сохраняется при ошибке.
-SHA-256 печатается в JSON-отчёте. Он проверяет точность передачи, не означает аудит кода.
-При изменении состава обновить allowlist и проверить содержимое ZIP вручную.
+The builder rejects path traversal, symlinks, Windows reparse points, missing required
+files and missing referenced icons. It checks inputs before atomically replacing the
+ZIP. Fixed entry ordering, timestamps and permissions make repeated builds with the
+same input bytes reproducible in the same environment. The printed SHA-256 verifies
+transfer integrity, not a security audit.
 
-Для переносимости распаковать в новую папку `svg-vectorizer`, создать окружение по
-[README](../README.md), выполнить native tests и конвертацию вне исходного checkout.
-Этот ZIP — исходная поставка, не готовая виртуальная среда. Wheel/npm-публикация
-не готовилась: Node-зависимости устанавливаются рядом со скриптом; поддержан editable CLI.
+Extract into a new `svg-vectorizer` folder, install dependencies afresh and repeat the
+tests. The ZIP is a source package, not a portable virtual environment or a standalone
+Python wheel. Do not upload a review bundle in place of this plugin ZIP.
 
-## Лицензии и происхождение
+## Submit to OpenAI yourself
 
-`LICENSE` сохраняет исходную MIT-лицензию и copyright 2026 Lainterus1.
-Происхождение: существующий SVG Vectorizer, ранее хранившийся в HighGrade;
-из него экспортированы только собственные файлы плагина. Связи runtime с HighGrade
-нет, предварительный адаптер не входит в публикацию. Эта подготовка не заявляет
-прав на чужие изображения. Демо строится собственным `tests/fixtures.py`; иконка —
-новые простые геометрические примитивы из `assets/logo.svg`. По явному выбору автора имя издателя в пакете — Daniil; GitHub — Lainterus1.
-Публичный контакт поддержки: gonchardaniil1998@gmail.com (разрешён автором).
-Это не подтверждает прохождение проверки издателя OpenAI.
+1. Open the [plugin portal](https://platform.openai.com/plugins) and choose the owning
+   organization/project and verified developer identity
+2. Upload `dist/svg-vectorizer.zip`, then resolve the actual Metadata & Skills findings
+3. Submit the checked package for review; publication is a separate step after approval
 
-Прямые зависимости не включены в ZIP. По metadata закреплённых установленных пакетов:
-VTracer 1.0.0a4 — MIT OR Apache-2.0; Pillow 12.3.0 — MIT-CMU; SVGO 4.1.0 — MIT;
-resvg-js 2.6.2 — MPL-2.0. Их лицензии не заменяются MIT этого плагина. Если позднее
-распространять готовые бинарники/окружение, отдельно проверить транзитивные лицензии,
-уведомления и обязанности, включая MPL; текущий исходный ZIP этого не делает.
+Follow the [submission guide](https://developers.openai.com/plugins/deploy/submission)
+and [plugin guidelines](https://developers.openai.com/plugins/plugin-guidelines).
+The selected verified identity controls the directory publisher name; the manifest
+alone does not verify an identity. This package has no MCP, app reference or hooks.
+Skills-only submission does not need invented MCP tool cases. The current submission
+guide says MCP cannot later be added to an existing skills-only plugin, so consider
+that boundary before the first submission if a server is genuinely planned.
 
-## OpenAI: следующий этап
+The public [privacy policy](PRIVACY.md) describes local processing and support email
+handling. Do not promise platform-wide privacy based solely on the local CLI.
+Windows/macOS native tests and end-to-end skill tests in each intended client remain
+separate from Linux CLI verification. A local validator cannot promise directory approval.
 
-Проверено по официальным документам 2026-09-30:
+## License and provenance
 
-- [Package your plugin](https://developers.openai.com/plugins/build/plugins): текущий
-  `.codex-plugin/plugin.json` поддержан как compatibility layout. Миграция на portable
-  root manifest не нужна для этой подготовки. Локальный marketplace не равен публичной публикации.
-- [Submit plugins](https://developers.openai.com/plugins/deploy/submission): отправляется
-  ZIP, затем автоматические проверки/ревью; публикация — отдельное действие после одобрения.
-  Для skills-only не требуется придумывать MCP или заполнять MCP review. Добавление MCP
-  к уже опубликованному skills-only плагину сейчас не поддержано: решение о сервере принять
-  до первой отправки, если такой сервер действительно понадобится.
-- [Plugin guidelines](https://developers.openai.com/plugins/plugin-guidelines): нужны
-  достоверное описание, права на материалы, опубликованная privacy policy и контакт поддержки.
-  Проверки metadata не заменяют соответствие общим правилам.
+The original MIT license and copyright 2026 Lainterus1 are preserved. This standalone
+package was extracted from SVG Vectorizer sources previously maintained in HighGrade;
+there is no runtime dependency or included HighGrade adapter. Demo artwork is original
+project material. The plugin does not grant rights to other people's input images.
 
-Перед отправкой проверить выбранную publisher identity и доступность опубликованной
-privacy policy. Имя в каталоге определяется выбранной
-verified identity OpenAI, не одним полем developerName в ZIP. Если publisher identity уже проверена,
-повторная проверка не нужна; состояние аккаунта здесь не устанавливалось. [PRIVACY](PRIVACY.md) подготовлена с согласованным правилом: письма поддержки
-удаляются в течение 30 дней после закрытия обращения, по запросу отправителя — раньше; политика размещается в собственном репозитории плагина, отдельный сайт не нужен.
-Проверенный HTTPS-адрес указывается в privacyPolicyURL перед отправкой ZIP. Иконки подготовлены из собственных простых SVG-примитивов, права — MIT.
-Проверить реальную установку и вызов Skill в целевых ChatGPT/Codex клиентах: успешный
-локальный CLI не доказывает наличие Python/Node, разрешения на исполнение или зависимости
-в каждом продукте. Native Windows/macOS проверки и клиентский smoke ещё нужны перед
-обещанием поддержки этих сред. Актуальные результаты проверок прилагаются к review bundle.
-
-## Короткая проверка перед отправкой
-
-1. Проверить подготовленную версию 0.1.1, diff/права/лицензии; зависимости остаются под своими лицензиями
-2. Запустить Python tests (включая реальный Node helper), smoke и validator plugin-creator
-3. Собрать ZIP дважды; сверить SHA и протестировать распакованную копию
-4. Пройти клиентский smoke: логотип с прозрачностью, иллюстрация, неверный input,
-   отсутствующая зависимость, повторный запуск и сохранность прежнего output при ошибке
-5. По отдельному поручению отправить ZIP, устранить реальные замечания портала;
-   после одобрения отдельно подтвердить публикацию
-
-Не добавлять `.app.json`, hooks, автозагрузку пакетов или сетевой endpoint ради вида
-«готовой интеграции». Плагин выполняет локальную конвертацию после явной установки зависимостей.
+Dependencies are installed separately and retain their licenses: VTracer 1.0.0a4 —
+MIT OR Apache-2.0; Pillow 12.3.0 — MIT-CMU; SVGO 4.1.0 — MIT; resvg-js 2.6.2 — MPL-2.0.
+Bundling binaries or an environment would require a separate dependency-license review.

@@ -1,41 +1,54 @@
-# SVG Vectorizer: обработка данных
+# SVG Vectorizer privacy policy
 
-Политика конфиденциальности, редакция от 2026-09-30.
-Описывает текущую локальную реализацию; это не политика платформы ChatGPT/Codex.
-Издатель: Daniil (GitHub: [Lainterus1](https://github.com/Lainterus1)).
-Поддержка и вопросы об обработке данных: gonchardaniil1998@gmail.com.
-Публикация этого контакта для плагина разрешена издателем.
+Updated: September 30, 2026
+Publisher: **Daniil** ([Lainterus1 on GitHub](https://github.com/Lainterus1))
+Support and privacy contact: **gonchardaniil1998@gmail.com**
 
-- Вход: выбранный пользователем PNG/JPEG/WebP и параметры преобразования. Изображение
-  может содержать персональные данные; плагину не нужны сведения о владельце, аккаунты,
-  ключи API, контакты или идентификаторы. Используйте только изображения, которые вправе обрабатывать
-- Цель: локально декодировать растр, построить SVG и проверить его отрисовку
-- Получатели: собственный CLI не отправляет растр, SVG или параметры во внешние сервисы.
-  Python и Node взаимодействуют локально через stdin/stdout. При установке пакетов PyPI/npm
-  и их инфраструктура получают обычные сетевые запросы установщика. Если пользователь
-  загружает файл в ChatGPT/Codex или просит отправить результат, действуют правила платформы
-  и выбранного им получателя; это вне автономного CLI
-- Хранение: исходник сохраняется без изменения, итоговый SVG остаётся по выбранному пути
-  до удаления пользователем. Временный SVG удаляется после замены или обрабатываемой ошибки;
-  аварийное завершение ОС/процесса может оставить `.vectorize-*.svg` рядом с результатом.
-  Постоянной базы, телеметрии и фонового сервиса нет. Консольные сообщения могут содержать
-  пути файлов и сохраняться терминалом/агентом по его настройкам
-- Управление: пользователь выбирает файлы и выходной путь, может отменить процесс и удалить
-  созданные результаты/остаточные временные файлы. Повторная запись заменяет выбранный output
-  только после успешной проверки; резервные копии предыдущих успешных результатов не ведутся
+This policy describes SVG Vectorizer's local implementation. It is separate from
+the policies of ChatGPT/Codex, Gmail and other services you choose to use.
 
-## Обращения в поддержку
+## Local image processing
 
-При добровольном обращении издатель получает ваш email, текст и вложения только для
-ответа на вопрос. Письма обрабатываются в Gmail и доступны издателю; растр не нужен,
-если вопрос можно описать текстом. Не присылайте пароли, ключи, государственные
-идентификаторы, платёжные или медицинские сведения. Для примера используйте обезличенный файл.
+The plugin reads the PNG, JPEG or WebP image you select and the conversion options
+you provide. An image may contain personal data. The plugin does not need an account,
+API key, contact list or information about the image's owner. Only process images
+you have the right to use.
 
-Издатель удаляет переписку поддержки в течение 30 дней после закрытия обращения,
-а по запросу отправителя — раньше. Запрос можно отправить на указанный выше адрес
-поддержки. Это принятое издателем правило обработки обращений; сам CLI не управляет
-почтовым ящиком и не выполняет автоматическое удаление писем.
+The purpose is to decode the raster, generate an SVG and validate its rendering.
+The CLI does not send your images, SVGs or conversion options to external services.
+Python and Node communicate locally through standard input/output. Dependency
+installation makes ordinary installer requests to PyPI/npm and their infrastructure.
 
-Обработка данных в ChatGPT/Codex, Gmail и других платформах регулируется также
-их собственными политиками. Локальное поведение CLI не означает отсутствия обработки
-данных платформой, через которую пользователь передал исходник или обратился в поддержку.
+If you upload a file to ChatGPT/Codex or ask another service to share the result,
+that platform and the recipient process it under their own rules. Those actions
+are outside the standalone CLI.
+
+## Files and retention
+
+The input stays unchanged. The output SVG remains at the path you choose until you
+delete it. A successful conversion replaces an existing output only after validation;
+it does not keep a backup of the previous successful result.
+
+A temporary SVG is removed after replacement or a handled error. An operating-system
+or process crash may leave a `.vectorize-*.svg` file beside the output. The plugin
+has no persistent database, telemetry or background service. Console messages can
+contain file paths and may be retained by your terminal or agent under its settings.
+
+You control the input and destination, can cancel a conversion, and can delete its
+outputs and leftover temporary files.
+
+## Support correspondence
+
+When you voluntarily contact support, the publisher receives your email address,
+message and attachments to answer your request. Correspondence is handled in Gmail
+and is accessible to the publisher. Do not attach an image if a text explanation is
+enough. Do not send passwords, API keys, government identifiers, payment information
+or medical records; use an anonymized sample when an example is necessary.
+
+The publisher deletes support correspondence within **30 days after an issue is
+closed**, or earlier at the sender's request. Send deletion requests to the contact
+address above. This is the publisher's support-handling policy; the CLI does not
+manage the mailbox or automatically delete messages.
+
+Local CLI processing does not imply that a platform through which you upload files
+or contact support performs no data processing. Those platforms' own policies also apply.
