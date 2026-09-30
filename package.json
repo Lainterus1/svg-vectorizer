@@ -1,0 +1,14 @@
+{
+  "name": "svg-vectorizer-tools",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Local SVG optimization and render validation",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "svgo": "4.1.0",
+    "@resvg/resvg-js": "2.6.2"
+  },
+  "license": "MIT"
+}

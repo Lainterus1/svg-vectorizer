@@ -1,0 +1,42 @@
+{
+  "name": "svg-vectorizer",
+  "version": "0.1.1",
+  "description": "Convert PNG, JPG and WebP to SVG with local VTracer, SVGO and render validation.",
+  "author": {
+    "name": "Daniil",
+    "url": "https://github.com/Lainterus1",
+    "email": "gonchardaniil1998@gmail.com"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "SVG Vectorizer",
+    "shortDescription": "Raster to SVG, locally",
+    "longDescription": "Vectorize logos, icons, illustrations and line art locally. Preserve transparency, optimize with SVGO, and validate the rendered result.",
+    "developerName": "Daniil",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Convert this logo to SVG and preserve transparency.",
+      "Vectorize this illustration while keeping small details.",
+      "Convert this line drawing to SVG."
+    ],
+    "brandColor": "#356A59",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
+    "websiteURL": "https://github.com/Lainterus1/svg-vectorizer",
+    "privacyPolicyURL": "https://github.com/Lainterus1/svg-vectorizer/blob/main/docs/PRIVACY.md"
+  },
+  "license": "MIT",
+  "keywords": [
+    "svg",
+    "vectorize",
+    "raster",
+    "vtracer",
+    "local"
+  ],
+  "homepage": "https://github.com/Lainterus1/svg-vectorizer",
+  "repository": "https://github.com/Lainterus1/svg-vectorizer"
+}
